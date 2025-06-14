@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Tortoise and The Hare: Fill in the Blanks</title>
+    <!-- Include Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light grey background */
+            display: flex;
+            flex-direction: column; /* Changed to column to stack header and container */
+            align-items: center; /* Center horizontally */
+            min-height: 100vh;
+            padding: 0; /* Remove body padding to allow header to stretch fully */
+            position: relative;
+            overflow-x: hidden;
+        }
+        .main-header {
+            width: 100%;
+            background-color: #8B0000; /* Dark Red background for the header */
+            color: #FFFFFF; /* White text color */
+            padding: 1rem 1.5rem; /* Padding for text and to contain logo */
+            display: flex;
+            align-items: center; /* Vertically center content */
+            gap: 0.75rem; /* Space between logo and text, slightly increased for visual separation but still 'pegada' */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Subtle shadow */
+        }
+        .header-logo img {
+            flex-shrink: 0; /* Prevent logo from shrinking */
+            width: 80px; /* Size of the logo */
+            height: 80px;
+            object-fit: contain; /* Ensure the whole image is visible without cropping */
+            display: block; /* Remove extra space below image */
+        }
+        .header-text {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700; /* font-bold */
+            line-height: 1.2; /* Tighter line height for the two lines */
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            width: 100%;
+            max-width: 800px; /* Max width for content */
+            margin-top: 2rem; /* Margin from the header */
+            margin-bottom: 2rem; /* Bottom margin */
+        }
+        .blank-input {
+            width: 120px; /* Fixed width for inputs */
+            padding: 0.3rem 0.5rem;
+            border: 2px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            text-align: center;
+            font-weight: 500;
+            color: #1f2937; /* text-gray-900 */
+            transition: border-color 0.2s, background-color 0.2s;
+            outline: none; /* Remove default outline on focus */
+        }
+        .blank-input:focus {
+            border-color: #CD5C5C; /* Indian Red for focus */
+            box-shadow: 0 0 0 3px rgba(205, 92, 92, 0.2); /* Red focus ring */
+        }
+        /* Styles for correct/incorrect input borders and backgrounds, applied by JS */
+        .blank-input.correct-input-style {
+            border-color: #22c55e; /* green-500 */
+            background-color: #f0fdf4; /* green-50 */
+        }
+        .blank-input.incorrect-input-style {
+            border-color: #ef4444; /* red-500 */
+            background-color: #fef2f2; /* red-50 */
+        }
+
+        .story-text {
+            line-height: 2.2; /* Increase line spacing for inputs */
+            text-align: justify;
+            margin-top: 1.5rem; /* Space between instructions list and story */
+            border-top: 1px solid #ffaaaa; /* Light red separator line */
+            padding-top: 1.5rem;
+        }
+        .story-text input {
+            display: inline-block; /* Ensure inputs don't break the line */
+            vertical-align: middle; /* Align inputs with text */
+            margin: 0 0.25rem; /* Small horizontal margin */
+        }
+        .feedback-icon {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 0.25rem; /* Small margin after input */
+            font-size: 1.25rem; /* text-xl */
+            font-weight: bold;
+            line-height: 1; /* Align vertically */
+        }
+        /* Styles for the info message box */
+        .message-box {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 0.75rem; /* rounded-lg */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            z-index: 1000;
+            text-align: center;
+            max-width: 90%;
+        }
+        .message-box button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #8B0000; /* Dark Red */
+            color: white;
+            border-radius: 0.5rem; /* rounded-md */
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .message-box button:hover {
+            background-color: #A52A2A; /* Slightly lighter dark red on hover */
+        }
+
+        /* Custom Dark Red Theme Colors */
+        .bg-indigo-600 { background-color: #8B0000; } /* Dark Red for primary buttons */
+        .hover\:bg-indigo-700:hover { background-color: #A52A2A; } /* Slightly lighter dark red on hover */
+        .focus\:ring-indigo-500:focus { --tw-ring-color: #CD5C5C; } /* Indian Red for focus ring */
+
+        .bg-gray-400 { background-color: #A52A2A; } /* Use a shade of dark red for reset button */
+        .hover\:bg-gray-500:hover { background-color: #B22222; } /* Slightly darker red on hover for reset */
+        .focus\:ring-gray-300:focus { --tw-ring-color: #CD5C5C; } /* Red focus ring for reset */
+
+        /* Gemini buttons in a complementary red tone */
+        .bg-purple-600 { background-color: #CD5C5C; } /* Indian Red for Gemini buttons */
+        .hover\:bg-purple-700:hover { background-color: #B22222; } /* Firebrick on hover */
+        .focus\:ring-purple-500:focus { --tw-ring-color: #DC143C; } /* Crimson for ring */
+
+
+        .bg-blue-50 { background-color: #ffeaea; } /* Very light red for info box background */
+        .border-blue-200 { border-color: #ffcccc; } /* Light red border for info box */
+        .text-blue-800 { color: #8B0000; } /* Dark Red text for info box header */
+        .text-blue-700 { color: #A52A2A; } /* Dark Red text for info box list items */
+
+        /* Style for Gemini output area */
+        #geminiOutput {
+            min-height: 50px; /* Minimum height to always show the container */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.4;
+            color: #4A0404; /* Darker red text for Gemini output */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 640px) { /* Tailwind's 'sm' breakpoint */
+            .main-header {
+                padding: 0.75rem 1rem; /* Smaller padding for header on small screens */
+                gap: 0.5rem; /* Smaller gap */
+            }
+            .header-logo img {
+                width: 60px; /* Smaller logo on small screens */
+                height: 60px;
+            }
+            .header-text {
+                font-size: 1rem; /* text-base */
+            }
+            .container {
+                padding: 1rem;
+                margin-top: 1.5rem;
+            }
+            .story-text {
+                margin-top: 1rem;
+                padding-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Header with University Name, Faculty, and Logo -->
+    <div class="main-header">
+        <div class="header-logo">
+            <!-- La URL del logo ahora es relativa, asumiendo que "Escudo_de_la_Universidad_de_El_Salvador.svg.png" está en el mismo directorio en GitHub Pages -->
+            <img src="Escudo_de_la_Universidad_de_El_Salvador.svg.png" alt="University of El Salvador Logo" onerror="this.onerror=null;this.src='https://placehold.co/80x80/8B0000/FFFFFF?text=Logo+UES';">
+        </div>
+        <div class="header-text">
+            <p>Universidad de El Salvador</p>
+            <p>Facultad Multidisciplinaria Oriental</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-6">
+            The Tortoise and The Hare
+        </h1>
+        <!-- Removed: <p class="text-xl text-center text-gray-600 mb-8 italic">Fill in the blanks to complete the story!</p> -->
+
+        <div class="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h2 class="text-lg font-semibold text-blue-800 mb-2">Instructions:</h2>
+            <ul class="list-disc list-inside text-blue-700 text-base">
+                <li>Fill in the blanks to complete the story!</li>
+                <li>Read the story carefully.</li>
+                <li>Write the word you think is missing in each blank space.</li>
+                <li>Correct answers will show a green checkmark (✓) and incorrect answers will show a red cross (✗) *as you type*.</li>
+                <li>Click the "Check Answers" button when you are done for a final score.</li>
+                <li>You can click "Reset Activity" to try again.</li>
+                <li>Use the new ✨ buttons for extra help or information!</li>
+            </ul>
+
+            <div class="story-text text-gray-800 text-lg">
+                <p>
+                    One day, in a beautiful
+                    <input type="text" id="blank1" class="blank-input" data-correct-answer="forest">,
+                    there lived a very
+                    <input type="text" id="blank2" class="blank-input" data-correct-answer="proud">
+                    <input type="text" id="blank3" class="blank-input" data-correct-answer="hare">
+                    who always made fun of the slow
+                    <input type="text" id="blank4" class="blank-input" data-correct-answer="turtle">.
+                    The hare boasted about how
+                    <input type="text" id="blank5" class="blank-input" data-correct-answer="fast">
+                    she was and how no one could
+                    <input type="text" id="blank6" class="blank-input" data-correct-answer="run">
+                    with her in a
+                    <input type="text" id="blank7" class="blank-input" data-correct-answer="race">.
+                </p>
+                <p>
+                    One day, the turtle, tired of her
+                    <input type="text" id="blank8" class="blank-input" data-correct-answer="jokes">,
+                    challenged the hare to a
+                    <input type="text" id="blank9" class="blank-input" data-correct-answer="race">.
+                    The hare laughed
+                    <input type="text" id="blank10" class="blank-input" data-correct-answer="loudly">,
+                    sure of her
+                    <input type="text" id="blank11" class="blank-input" data-correct-answer="victory">.
+                </p>
+                <p>
+                    The race
+                    <input type="text" id="blank12" class="blank-input" data-correct-answer="started">.
+                    The hare shot off like a
+                    <input type="text" id="blank13" class="blank-input" data-correct-answer="flash">,
+                    leaving the poor turtle far behind. The hare, feeling so
+                    <input type="text" id="blank14" class="blank-input" data-correct-answer="sure">
+                    of her lead, decided to take a
+                    <input type="text" id="blank15" class="blank-input" data-correct-answer="nap">
+                    under a tree.
+                </p>
+                <p>
+                    Meanwhile, the turtle, with a
+                    <input type="text" id="blank16" class="blank-input" data-correct-answer="slow">
+                    but firm pace, kept moving without stopping. She passed the sleeping hare and continued her
+                    <input type="text" id="blank17" class="blank-input" data-correct-answer="path">.
+                    When the hare woke up, she saw the turtle about to cross the
+                    <input type="text" id="blank18" class="blank-input" data-correct-answer="end">
+                    line.
+                </p>
+                <p>
+                    The hare ran with all her
+                    <input type="text" id="blank19" class="blank-input" data-correct-answer="power">,
+                    but it was too late. The turtle crossed the finish
+                    <input type="text" id="blank20" class="blank-input" data-correct-answer="line">
+                    and won the race.
+                </p>
+                <p>
+                    The hare learned a
+                    <input type="text" id="blank21" class="blank-input" data-correct-answer="good">
+                    lesson that day: "Slow but
+                    <input type="text" id="blank22" class="blank-input" data-correct-answer="steady">
+                    <input type="text" id="blank23" class="blank-input" data-correct-answer="wins">
+                    the race."
+                </p>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-6">
+            <button id="checkAnswersBtn"
+                    class="bg-indigo-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-md">
+                Check Answers
+            </button>
+            <button id="resetActivityBtn"
+                    class="bg-gray-400 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-md">
+                Reset Activity
+            </button>
+        </div>
+
+        <!-- New section for Gemini API features -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <button id="getHintBtn"
+                    class="bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-md">
+                ✨ Get a Hint
+            </button>
+            <button id="getMoralBtn"
+                    class="bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-200 ease-in-out transform hover:scale-105 active:scale-95 shadow-md">
+                ✨ Moral of the Story
+            </button>
+        </div>
+
+        <!-- Area for Gemini's response -->
+        <div id="geminiOutput" class="bg-blue-50 p-4 rounded-lg text-gray-800 text-sm italic">
+            <p id="geminiText">Click a ✨ button for help or insight!</p>
+        </div>
+
+        <div id="resultDisplay" class="text-center text-2xl font-bold text-gray-700 mt-4">
+            Score: 0/23
+        </div>
+    </div>
+
+    <!-- Container for info message box -->
+    <div id="messageBox" class="message-box">
+        <p id="messageText" class="text-lg text-gray-800"></p>
+        <button id="closeMessageBtn">Close</button>
+    </div >
+
+    <script>
+        // Function to show a message in the floating box
+        function showMessage(message) {
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            messageText.textContent = message;
+            messageBox.style.display = 'block';
+        }
+
+        // Function to hide the message box
+        function hideMessage() {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.style.display = 'none';
+        }
+
+        // Event listener for the close message button
+        document.getElementById('closeMessageBtn').addEventListener('click', hideMessage);
+
+        // Get all blank input elements
+        const blankInputs = document.querySelectorAll('.blank-input');
+        const checkAnswersBtn = document.getElementById('checkAnswersBtn');
+        const resetActivityBtn = document.getElementById('resetActivityBtn');
+        const resultDisplay = document.getElementById('resultDisplay');
+
+        // Gemini API buttons and output area
+        const getHintBtn = document.getElementById('getHintBtn');
+        const getMoralBtn = document.getElementById('getMoralBtn');
+        const geminiOutput = document.getElementById('geminiOutput');
+        const geminiText = document.getElementById('geminiText');
+
+        // Array of all action buttons to easily disable/enable
+        const allActionButtons = [checkAnswersBtn, resetActivityBtn, getHintBtn, getMoralBtn];
+
+        // Function to handle live feedback as user types
+        function applyLiveFeedback(input) {
+            const userAnswer = input.value.trim().toLowerCase();
+            const correctAnswer = input.dataset.correctAnswer.toLowerCase();
+
+            // Remove any existing feedback icon
+            const existingIcon = input.nextElementSibling;
+            if (existingIcon && existingIcon.classList.contains('feedback-icon')) {
+                existingIcon.remove();
+            }
+            // Remove previous input styling
+            input.classList.remove('correct-input-style', 'incorrect-input-style');
+
+            if (userAnswer === '') {
+                // If input is empty, clear styles and icon and do nothing else
+                return;
+            }
+
+            const iconSpan = document.createElement('span');
+            iconSpan.classList.add('feedback-icon');
+            iconSpan.style.verticalAlign = 'middle';
+
+            if (userAnswer === correctAnswer) {
+                input.classList.add('correct-input-style');
+                iconSpan.textContent = '✓'; // Checkmark Unicode
+                iconSpan.classList.add('text-green-600'); // Tailwind green
+            } else {
+                input.classList.add('incorrect-input-style');
+                iconSpan.textContent = '✗'; // Cross Unicode
+                iconSpan.classList.add('text-red-600'); // Tailwind red
+            }
+            // Insert the icon after the input
+            input.parentNode.insertBefore(iconSpan, input.nextSibling);
+        }
+
+        // Function to check answers (final check)
+        function checkAnswers() {
+            let correctCount = 0;
+            blankInputs.forEach(input => {
+                // Apply live feedback logic again for consistency on final check
+                applyLiveFeedback(input);
+
+                const userAnswer = input.value.trim().toLowerCase();
+                const correctAnswer = input.dataset.correctAnswer.toLowerCase();
+                if (userAnswer === correctAnswer) {
+                    correctCount++;
+                }
+                // Disable editing after final check
+                input.readOnly = true;
+            });
+            resultDisplay.textContent = `Score: ${correctCount}/${blankInputs.length}`;
+            showMessage(`Activity complete! You got ${correctCount} out of ${blankInputs.length} words correct.`);
+            geminiText.textContent = 'Click a ✨ button for help or insight!'; // Clear Gemini output on check
+        }
+
+        // Function to reset the activity
+        function resetActivity() {
+            blankInputs.forEach(input => {
+                input.value = ''; // Clear input value
+                input.readOnly = false; // Enable editing again
+
+                // Remove any feedback icon
+                const existingIcon = input.nextElementSibling;
+                if (existingIcon && existingIcon.classList.contains('feedback-icon')) {
+                    existingIcon.remove();
+                }
+                // Remove input styling
+                input.classList.remove('correct-input-style', 'incorrect-input-style');
+            });
+            resultDisplay.textContent = `Score: 0/${blankInputs.length}`; // Reset score display
+            geminiText.textContent = 'Click a ✨ button for help or insight!'; // Clear Gemini output on reset
+            hideMessage(); // Hide any message if visible
+        }
+
+        // Function to call Gemini API
+        async function callGeminiAPI(prompt, targetElement) {
+            targetElement.textContent = 'Loading...'; // Show loading state
+            // Disable all action buttons during API call
+            allActionButtons.forEach(btn => btn.disabled = true);
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // API key will be provided by Canvas at runtime
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    targetElement.textContent = text;
+                } else {
+                    targetElement.textContent = 'Could not get a response from Gemini.';
+                    console.error('Unexpected Gemini API response structure:', result);
+                }
+            } catch (error) {
+                targetElement.textContent = 'Error connecting to Gemini API.';
+                console.error('Error calling Gemini API:', error);
+            } finally {
+                // Re-enable all action buttons
+                allActionButtons.forEach(btn => btn.disabled = false);
+            }
+        }
+
+        // Event listener for "Get a Hint" button
+        getHintBtn.addEventListener('click', () => {
+            // Find the first empty blank input that is not readOnly
+            let emptyBlank = null;
+            for (let i = 0; i < blankInputs.length; i++) {
+                if (blankInputs[i].value.trim() === '' && !blankInputs[i].readOnly) {
+                    emptyBlank = blankInputs[i];
+                    break;
+                }
+            }
+
+            if (!emptyBlank) {
+                showMessage("All blanks are filled or checked! Reset the activity to get hints.");
+                geminiText.textContent = 'Click a ✨ button for help or insight!';
+                return;
+            }
+
+            const correctAnswer = emptyBlank.dataset.correctAnswer;
+            // Construct a prompt for Gemini for a generic hint
+            const prompt = `Give a very simple, one-word hint for an A1 English learner for a word that belongs in an empty blank space in "The Tortoise and The Hare" story. Do NOT use the word '${correctAnswer}' or any part of it in the hint. Keep it very general and short.`;
+            
+            callGeminiAPI(prompt, geminiText);
+        });
+
+        // Event listener for "Moral of the Story" button
+        getMoralBtn.addEventListener('click', () => {
+            const prompt = `What is the moral of "The Tortoise and The Hare" story? Explain it simply in English, suitable for a B1 English learner. Keep it concise, under 70 words.`;
+            callGeminiAPI(prompt, geminiText);
+        });
+
+        // Assign event listeners to regular buttons
+        checkAnswersBtn.addEventListener('click', checkAnswers);
+        resetActivityBtn.addEventListener('click', resetActivity);
+
+        // Add input event listeners for real-time feedback
+        blankInputs.forEach(input => {
+            input.addEventListener('input', () => applyLiveFeedback(input));
+        });
+
+        // Initialize state on page load
+        window.addEventListener('load', () => {
+            resetActivity(); // Ensure everything is clean on load
+        });
+    </script>
+</body>
+</html>
